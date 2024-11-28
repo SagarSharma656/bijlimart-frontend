@@ -7,6 +7,7 @@ import { BiLeftArrowAlt } from 'react-icons/bi';
 import OtpInput from 'react-otp-input';
 import { callAPI } from '../../services/callAPIFunction';
 import { otpEndPoints } from '../../services/apiEndPoints';
+import toast from 'react-hot-toast';
 const { VITE_API_BASE_URL } = import.meta.env;
 
 const UserLogin = ({ setIsLogin }) => {
@@ -19,16 +20,15 @@ const UserLogin = ({ setIsLogin }) => {
 
   const handleContinue = async () => {
     if (phoneNumber.length === 10 && /^[0-9]{10}$/.test(phoneNumber)) {
-
+ 
       const data = {
         phone : phoneNumber
       }
       
       const response = await callAPI('post', `${VITE_API_BASE_URL}${otpEndPoints.sendOtpOnWhatsapp}`, data);
 
-      console.log(response)
-
       if(response.status == 200){
+        sessionStorage.setItem('otp', response.data.otp);
         setShowOtpSection(true);
         setErrorMessage('');
       }
@@ -39,16 +39,18 @@ const UserLogin = ({ setIsLogin }) => {
   };
 
   const handleConfirmOtp = () => {
-    const otpEntered = otp.join('');
-    const storedOtp = sessionStorage.getItem('otp'); // Retrieve OTP from sessionStorage
+    const storedOtp = sessionStorage.getItem('otp') // Retrieve OTP from sessionStorage
 
-    if (otpEntered === storedOtp) {
-      console.log('OTP Verified:', otpEntered);
-      setOtpSubmitted(true);
+
+    
+    if(storedOtp === otp){
+      toast.success("Login Successful")
+      setErrorMessage('')
       setIsLogin(false); // Close login page after successful OTP
     } else {
       setErrorMessage('Incorrect OTP entered. Please try again.');
     }
+
   };
 
   const handleGoBack = () => {
